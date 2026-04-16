@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Planner</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #eef2ff, #f8fafc);
+      color: #1f2937;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 1550px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .hero h1 {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      color: #1e3a8a;
+    }
+
+    .hero p {
+      color: #475569;
+      font-size: 1rem;
+    }
+
+    .top-panel {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #dbeafe;
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+      padding: 16px;
+      margin-bottom: 22px;
+    }
+
+    .week-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .week-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .week-nav button,
+    .toolbar button {
+      border: none;
+      background: #2563eb;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s ease;
+    }
+
+    .week-nav button:hover,
+    .toolbar button:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .week-label {
+      background: #eff6ff;
+      color: #1e3a8a;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      min-width: 260px;
+      text-align: center;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .history-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: end;
+    }
+
+    .history-panel label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .history-panel select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
+      background: white;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(190px, 1fr));
+      gap: 16px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    .day-column {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 660px;
+      border: 1px solid #dbeafe;
+    }
+
+    .day-header {
+      text-align: center;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1e40af;
+      padding: 10px;
+      border-radius: 12px;
+      background: #eff6ff;
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+
+    .day-date {
+      display: block;
+      font-size: 0.84rem;
+      color: #64748b;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    .task-form {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .task-form input,
+    .task-form select {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
+    }
+
+    .task-form button {
+      border: none;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #0f766e;
+      color: white;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .task-form button:hover {
+      background: #0d9488;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #475569;
+      margin: 10px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .task-list,
+    .completed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-list {
+      flex: 1;
+      min-height: 120px;
+    }
+
+    .task-card {
+      background: #f8fafc;
+      border-left: 6px solid #94a3b8;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+    }
+
+    .task-card.high {
+      border-left-color: #dc2626;
+      background: #fef2f2;
+    }
+
+    .task-card.mid {
+      border-left-color: #d97706;
+      background: #fffbeb;
+    }
+
+    .task-card.low {
+      border-left-color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .task-text {
+      font-size: 0.96rem;
+      font-weight: 600;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .priority-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+      color: white;
+    }
+
+    .priority-high { background: #dc2626; }
+    .priority-mid { background: #d97706; }
+    .priority-low { background: #16a34a; }
+
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .task-actions button {
+      border: none;
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .complete-btn {
+      background: #2563eb;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .completed-area {
+      border-top: 2px dashed #cbd5e1;
+      margin-top: 14px;
+      padding-top: 12px;
+    }
+
+    .completed-task {
+      background: #ecfdf5;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.92rem;
+      color: #166534;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .completed-task span {
+      text-decoration: line-through;
+      word-break: break-word;
+    }
+
+    .empty-state {
+      color: #94a3b8;
+      font-size: 0.88rem;
+      text-align: center;
+      padding: 14px 6px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    @media (max-width: 1300px) {
+      .board {
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .board {
+        grid-template-columns: 1fr;
+      }
+
+      .week-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      body {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="hero">
+      <h1>My Weekly Planner</h1>
+      <p>Organize your week by day, assign priorities, and look back at past accomplished weeks.</p>
+    </div>
+
+    <div class="top-panel">
+      <div class="week-controls">
+        <div class="week-nav">
+          <button id="prevWeekBtn">← Previous Week</button>
+          <div class="week-label" id="weekLabel"></div>
+          <button id="nextWeekBtn">Next Week →</button>
+        </div>
+
+        <div class="toolbar">
+          <button id="newWeekBtn">Start New Week</button>
+          <button id="clearBtn">Clear Current Week</button>
+        </div>
+      </div>
+
+      <div class="history-panel">
+        <div>
+          <label for="weekHistory">View Saved / Past Weeks</label>
+          <select id="weekHistory"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="board" id="board"></div>
+  </div>
+
+  <script>
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const storageKey = 'weeklyPlannerByDate';
+    const currentWeekKeyStorage = 'weeklyPlannerCurrentWeekKey';
+
+    let plannerData = safeLoadPlannerData();
+    let currentWeekKey = localStorage.getItem(currentWeekKeyStorage) || getMondayKey(new Date());
+
+    initializeWeek(currentWeekKey);
+    savePlannerData();
+    populateWeekHistory();
+    renderBoard();
+    wireEventListeners();
+    runSelfTests();
+
+    function safeLoadPlannerData() {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey)) || {};
+      } catch (error) {
+        console.warn('Planner data was corrupted and has been reset.', error);
+        return {};
+      }
+    }
+
+    function getMonday(date) {
+      const copy = new Date(date);
+      const day = copy.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      copy.setDate(copy.getDate() + diff);
+      copy.setHours(0, 0, 0, 0);
+      return copy;
+    }
+
+    function getMondayKey(date) {
+      return formatKey(getMonday(date));
+    }
+
+    function formatKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatLongDate(date) {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    function formatShortDate(date) {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    function getWeekDates(weekKey) {
+      const start = new Date(`${weekKey}T00:00:00`);
+      const dates = [];
+
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + i);
+        dates.push(date);
+      }
+
+      return dates;
+    }
+
+    function getWeekLabel(weekKey) {
+      const dates = getWeekDates(weekKey);
+      return `${formatLongDate(dates[0])} - ${formatLongDate(dates[6])}`;
+    }
+
+    function createDefaultWeek(weekKey) {
+      const week = {
+        weekKey,
+        label: getWeekLabel(weekKey),
+        days: {}
+      };
+
+      days.forEach(day => {
+        week.days[day] = {
+          active: [],
+          completed: []
+        };
+      });
+
+      return week;
+    }
+
+    function initializeWeek(weekKey) {
+      if (!plannerData[weekKey]) {
+        plannerData[weekKey] = createDefaultWeek(weekKey);
+      }
+    }
+
+    function savePlannerData() {
+      localStorage.setItem(storageKey, JSON.stringify(plannerData));
+      localStorage.setItem(currentWeekKeyStorage, currentWeekKey);
+    }
+
+    function getPriorityClass(priority) {
+      if (priority === 'High') return 'high';
+      if (priority === 'Mid') return 'mid';
+      return 'low';
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function renderBoard() {
+      initializeWeek(currentWeekKey);
+      const board = document.getElementById('board');
+      const week = plannerData[currentWeekKey];
+      const weekDates = getWeekDates(currentWeekKey);
+      document.getElementById('weekLabel').textContent = week.label;
+      board.innerHTML = '';
+
+      days.forEach((day, dayIndex) => {
+        const column = document.createElement('div');
+        column.className = 'day-column';
+
+        const activeTasks = week.days[day].active;
+        const completedTasks = week.days[day].completed;
+        const dateLabel = formatShortDate(weekDates[dayIndex]);
+
+        column.innerHTML = `
+          <div class="day-header">
+            ${day}
+            <span class="day-date">${dateLabel}</span>
+          </div>
+
+          <div class="task-form">
+            <input type="text" placeholder="Add a task..." id="input-${day}" />
+            <select id="priority-${day}">
+              <option value="High">High Priority</option>
+              <option value="Mid" selected>Mid Priority</option>
+              <option value="Low">Low Priority</option>
+            </select>
+            <button onclick="addTask('${day}')">Add Task</button>
+          </div>
+
+          <div class="section-title">To Do</div>
+          <div class="task-list">
+            ${activeTasks.length ? activeTasks.map((task, index) => `
+              <div class="task-card ${getPriorityClass(task.priority)}">
+                <div class="task-top">
+                  <div class="task-text">${escapeHtml(task.text)}</div>
+                  <div class="priority-badge priority-${getPriorityClass(task.priority)}">${task.priority}</div>
+                </div>
+                <div class="task-actions">
+                  <button class="complete-btn" onclick="completeTask('${day}', ${index})">Complete</button>
+                  <button class="delete-btn" onclick="deleteTask('${day}', ${index}, 'active')">Delete</button>
+                </div>
+              </div>
+            `).join('') : '<div class="empty-state">No tasks yet</div>'}
+          </div>
+
+          <div class="completed-area">
+            <div class="section-title">Completed</div>
+            <div class="completed-list">
+              ${completedTasks.length ? completedTasks.map((task, index) => `
+                <div class="completed-task">
+                  <span>${escapeHtml(task.text)} (${task.priority})</span>
+                  <button class="delete-btn" onclick="deleteTask('${day}', ${index}, 'completed')">Delete</button>
+                </div>
+              `).join('') : '<div class="empty-state">No completed tasks</div>'}
+            </div>
+          </div>
+        `;
+
+        board.appendChild(column);
+      });
+    }
+
+    function populateWeekHistory() {
+      const weekHistory = document.getElementById('weekHistory');
+      const sortedWeekKeys = Object.keys(plannerData).sort((a, b) => b.localeCompare(a));
+      weekHistory.innerHTML = '';
+
+      sortedWeekKeys.forEach(weekKey => {
+        const option = document.createElement('option');
+        option.value = weekKey;
+        option.textContent = plannerData[weekKey].label;
+        option.selected = weekKey === currentWeekKey;
+        weekHistory.appendChild(option);
+      });
+    }
+
+    function addTask(day) {
+      const input = document.getElementById(`input-${day}`);
+      const priority = document.getElementById(`priority-${day}`).value;
+      const text = input.value.trim();
+
+      if (!text) {
+        alert('Please enter a task first.');
+        return;
+      }
+
+      plannerData[currentWeekKey].days[day].active.push({ text, priority });
+      input.value = '';
+      savePlannerData();
+      populateWeekHistory();
+      renderBoard();
+    }
+
+    function completeTask(day, index) {
+      const finishedTask = plannerData[currentWeekKey].days[day].active.splice(index, 1)[0];
+      plannerData[currentWeekKey].days[day].completed.push(finishedTask);
+      savePlannerData();
+      populateWeekHistory();
+      renderBoard();
+    }
+
+    function deleteTask(day, index, listType) {
+      plannerData[currentWeekKey].days[day][listType].splice(index, 1);
+      savePlannerData();
+      populateWeekHistory();
+      renderBoard();
+    }
+
+    function changeWeek(offset) {
+      const currentStart = new Date(`${currentWeekKey}T00:00:00`);
+      currentStart.setDate(currentStart.getDate() + offset * 7);
+      currentWeekKey = formatKey(currentStart);
+      initializeWeek(currentWeekKey);
+      savePlannerData();
+      populateWeekHistory();
+      renderBoard();
+    }
+
+    function wireEventListeners() {
+      document.getElementById('prevWeekBtn').addEventListener('click', () => {
+        changeWeek(-1);
+      });
+
+      document.getElementById('nextWeekBtn').addEventListener('click', () => {
+        changeWeek(1);
+      });
+
+      document.getElementById('weekHistory').addEventListener('change', event => {
+        const selectedWeek = event.target.value;
+        if (!selectedWeek) return;
+
+        currentWeekKey = selectedWeek;
+        initializeWeek(currentWeekKey);
+        savePlannerData();
+        populateWeekHistory();
+        renderBoard();
+      });
+
+      document.getElementById('newWeekBtn').addEventListener('click', () => {
+        const newDate = prompt('Enter a date for the new week (example: 2026-04-20):');
+        if (!newDate) return;
+
+        const selectedDate = new Date(`${newDate}T00:00:00`);
+        if (isNaN(selectedDate.getTime())) {
+          alert('Please enter a valid date in YYYY-MM-DD format.');
+          return;
+        }
+
+        currentWeekKey = getMondayKey(selectedDate);
+        initializeWeek(currentWeekKey);
+        savePlannerData();
+        populateWeekHistory();
+        renderBoard();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        const confirmClear = confirm('Are you sure you want to clear all tasks for the current week?');
+        if (!confirmClear) return;
+
+        plannerData[currentWeekKey] = createDefaultWeek(currentWeekKey);
+        savePlannerData();
+        populateWeekHistory();
+        renderBoard();
+      });
+    }
+
+    function runSelfTests() {
+      console.assert(getMondayKey(new Date('2026-04-15T00:00:00')) === '2026-04-13', 'Thursday should map to Monday of the same week.');
+      console.assert(getMondayKey(new Date('2026-04-19T00:00:00')) === '2026-04-13', 'Sunday should map back to the prior Monday.');
+      console.assert(getWeekDates('2026-04-13').length === 7, 'A week should always render 7 dates.');
+      console.assert(createDefaultWeek('2026-04-13').days.Monday.active.length === 0, 'A new week should start with no active Monday tasks.');
+    }
+  </script>
+</body>
+</html>
